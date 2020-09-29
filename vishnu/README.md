@@ -1,4 +1,4 @@
-# EIP-Rampup
+# Vishnu implementation
 
 make a folder inside the src folder
 
@@ -23,3 +23,14 @@ create our go application
 - Build the Go app `RUN go build -o main .` Dependencies will be downloaded at this stage
 - Expose port 9091 to the outside world `EXPOSE 9091`
 - Command to run the executable `CMD ["./main"]`
+
+### Sample GET
+
+```shell
+curl http://localhost:9091/all
+```
+### Sample POST
+
+```shell
+curl --header "Content-Type: application/json" --request POST --data '{"Title":"Football","Desc":"Champions League","Content":"Liverpool won Champions League"}' http://localhost:9091/all
+```
