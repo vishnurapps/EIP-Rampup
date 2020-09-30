@@ -39,6 +39,66 @@ curl --header "Content-Type: application/json" --request POST --data '{"Title":"
 
 ## Kubernetes deployment
 
+### Create cluster and download kubectl
+
+```
+$ minikube start --wait=false
+* minikube v1.8.1 on Ubuntu 18.04
+* Using the none driver based on user configuration
+* Running on localhost (CPUs=2, Memory=2460MB, Disk=145651MB) ...
+* OS release is Ubuntu 18.04.4 LTS
+* Preparing Kubernetes v1.17.3 on Docker 19.03.6 ...
+  - kubelet.resolv-conf=/run/systemd/resolve/resolv.conf
+* Launching Kubernetes ...
+* Enabling addons: default-storageclass, storage-provisioner
+* Configuring local host environment ...
+* Done! kubectl is now configured to use "minikube"
+```
+
+### List nodes
+
+```
+$ kubectl get nodes
+```
+
+Output
+```
+NAME       STATUS   ROLES    AGE   VERSION
+minikube   Ready    master   25s   v1.17.3
+```
+
+### Create Dockerfile
+
+Make a directory called demo in /root/go and go to that folder
+```
+mkdir /root/go
+cd /root/go
+mkdir demo
+cd demo/
+```
+Do go mode init to generate the go.mod file
+```
+go mod init vishnu
+```
+
+Create the go file and do go build to generat the go.sum file 
+```
+go build
+```
+
+Create a docker file with the above contents and build it to get the crud:1.0 image
+
+```
+docker build -t crud:1.0 .
+```
+
+Issue docker images command to see the created image
+
+```
+$ docker images | grep crud
+crud                                            1.0                 f31712143232        42 minutes ago      855MB
+```
+
 ### Launch a deplyment
 
 ```shell
@@ -152,7 +212,7 @@ Output
 [{"Title":"Cricket","Desc":"Worldcup","Content":"India won worldcup"}]
 ```
 
-### List services
+### List pods
 
 ```
 $ kubectl get pods
@@ -164,4 +224,42 @@ NAME                           READY   STATUS    RESTARTS   AGE
 crudexposed-59496fbb75-k4jd8   1/1     Running   0          8m10s
 demo-66dd77d4d8-hkp7w          1/1     Running   0          23m
 httpexposed-68cb8c8d4-4fvd5    1/1     Running   0          11m
+```
+
+### Upscale the pod count
+
+```
+$ kubectl scale --replicas=3 deployment crudexposed
+```
+
+Output
+```
+deployment.apps/crudexposed scaled
+```
+### List pods
+
+```
+$ kubectl get pods
+```
+Output
+```
+NAME                           READY   STATUS    RESTARTS   AGE
+crudexposed-59496fbb75-gpqb6   0/1     Pending   0          75s
+crudexposed-59496fbb75-k4jd8   1/1     Running   0          14m
+crudexposed-59496fbb75-ztxx8   0/1     Pending   0          75s
+demo-66dd77d4d8-hkp7w          1/1     Running   0          29m
+httpexposed-68cb8c8d4-4fvd5    1/1     Running   0          17m
+```
+
+### Interact with pod
+
+POST new article
+
+```
+curl --header "Content-Type: application/json" --request POST --data '{"Title":"F1 Race","Desc":"F1 League","Content":"Bottas won F1 League"}' http://172.17.0.18:9091/all
+```
+Fetch all articles
+
+```
+$ curl http://172.17.0.18:9091/all[{"Title":"Cricket","Desc":"Worldcup","Content":"India won worldcup"},{"Title":"Football","Desc":"Champions League","Content":"Liverpoolwon Champions League"},{"Title":"F1 Race","Desc":"F1 League","Content":"Bottas won F1 League"}]
 ```
