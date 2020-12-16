@@ -7,14 +7,15 @@ LABEL maintainer="Vishnu R<vishnurapps@gmail.com"
 # Set the Current Working Directory inside the container
 WORKDIR /app
 
-# Copy go mod and sum files
-COPY go.mod go.sum ./
+#to get mod and sum files
+RUN go mod init vishnu
+
+# copying server.go into app which is working directory
+COPY server.go .
 
 # Download all dependencies. Dependencies will be cached if the go.mod and go.sum files are not changed
 RUN go mod download
 
-# Copy everything from the current directory to the Working Directory inside the container
-COPY . .
 
 # Build the Go app
 RUN go build -o main .
@@ -24,3 +25,4 @@ EXPOSE 9091
 
 # Command to run the executable
 CMD ["./main"]
+
